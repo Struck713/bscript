@@ -1,3 +1,29 @@
-1 + 2
-2 + 3
-4 + 4
+// this is a test
+let x = 10;
+let str = "some string";
+
+def func (x) {
+    let y = 15 20;
+    return x + y;
+}
+
+// do some weird copying
+let test = "some other string";
+let reassigned = test;
+reassigned = str + " " + reassigned;
+
+// add string to string
+def func2 (str) {
+    return str + reassigned;
+}
+
+/*
+def func3(comment) {
+    // this should be commented out
+}
+*/
+
+// comment should be ignored
+print(func(25));
+print(func2("this is a string"));
+print(test == "some other string");

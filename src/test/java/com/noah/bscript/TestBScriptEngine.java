@@ -23,7 +23,6 @@ public class TestBScriptEngine {
         BScriptEngine engine = new BScriptEngine();
         assertDoesNotThrow(() -> {
             BScript script = engine.load(new File("scripts/test.bscript"));
-            script.print();
         });
     }
 
