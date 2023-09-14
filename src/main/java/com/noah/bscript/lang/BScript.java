@@ -31,13 +31,10 @@ public class BScript {
 
         BLexer lexer = new BLexer(this, source);
         BParser parser = new BParser(this, lexer.tokenize());
-        BExpression expression = parser.parse();
-
         BInterpreter interpreter = new BInterpreter(this);
+
+        BExpression expression = parser.parse();
         interpreter.interpret(expression);
-
-        System.out.println(new BAstPrinter().print(expression));
-
     }
 
     public void error(int line, String location, String message) {

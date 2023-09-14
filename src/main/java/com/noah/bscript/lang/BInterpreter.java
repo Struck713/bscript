@@ -37,12 +37,6 @@ public class BInterpreter implements BExpression.Visitor<Object> {
             case LESS_EQUAL:
                 this.checkNumberOperands(expression.getOperator(), left, right);
                 return (double)left <= (double)right;
-            case NOT_EQUAL:
-                this.checkNumberOperands(expression.getOperator(), left, right);
-                return !isEqual(left, right);
-            case EQUAL_EQUAL:
-                this.checkNumberOperands(expression.getOperator(), left, right);
-                return isEqual(left, right);
             case MINUS:
                 this.checkNumberOperands(expression.getOperator(), left, right);
                 return (double)left - (double)right;
@@ -52,10 +46,18 @@ public class BInterpreter implements BExpression.Visitor<Object> {
             case STAR:
                 this.checkNumberOperands(expression.getOperator(), left, right);
                 return (double)left * (double)right;
+            case NOT_EQUAL: return !isEqual(left, right);
+            case EQUAL_EQUAL: return isEqual(left, right);
             case PLUS:
-                if (left instanceof Double && right instanceof Double) return (double)left + (double)right;
-                if (left instanceof String && right instanceof String) return ((String)left).concat((String)right);
-                throw new BRuntimeException(expression.getOperator(), "Operands must be two numbers or two strings.");
+                if (left instanceof Double) {
+                    if (right instanceof Double) return (double)left + (double)right;
+                    if (right instanceof String) return (double)left + (String)right;
+                }
+                if (left instanceof String) {
+                    if (right instanceof String) return (String)left + (String)right;
+                    if (right instanceof Double) return (String)left + (double)right;
+                }
+                throw new BRuntimeException(expression.getOperator(), "Operands must be string or number.");
         }
 
         return null;
