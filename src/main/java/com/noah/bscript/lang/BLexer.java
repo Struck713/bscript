@@ -24,7 +24,9 @@ public class BLexer {
     /**
      * Tokenize the provided source with the BScript.
      */
-    public void tokenize() {
+    public List<BToken> tokenize() {
+        this.tokens.clear();
+
         while (!this.isEnd()) {
             this.start = this.current;
 
@@ -54,8 +56,8 @@ public class BLexer {
                         while (!(this.peek() == '*' && this.peekNext() == '/') && !isEnd()) this.advance();
 
                         if (isEnd()) {
-                            this.script.error(this.line, this.current, "Block comment did not terminate.");
-                            return;
+                            this.script.error(this.line, " at end", "Block did not terminate.");
+                            break;
                         }
 
                         // eat the */
@@ -71,8 +73,8 @@ public class BLexer {
                     }
 
                     if (isEnd()) {
-                        this.script.error(this.line, this.current, "String did not terminate.");
-                        return;
+                        this.script.error(this.line, " at end", "String did not terminate.");
+                        break;
                     }
 
                     // eat the "
@@ -110,11 +112,12 @@ public class BLexer {
                         break;
                     }
 
-                    else this.script.error(this.line, this.current, "Could not identify token: " + next);
+                    else this.script.error(this.line, "Could not identify token: " + next);
              }
         }
 
         this.tokens.add(new BToken(BToken.Type.EOF, "<EOF>", null, this.line));
+        return this.tokens;
     }
 
     /**

@@ -22,7 +22,7 @@ public class TestBScriptEngine {
     void loadValidScript() {
         BScriptEngine engine = new BScriptEngine();
         assertDoesNotThrow(() -> {
-            BScript script = engine.load(new File("scripts/test.bscript"));
+            BScript script = engine.load(new File("scripts/test2.bscript"));
         });
     }
 
