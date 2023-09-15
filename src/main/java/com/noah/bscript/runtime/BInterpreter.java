@@ -1,22 +1,98 @@
-package com.noah.bscript.lang;
+package com.noah.bscript.runtime;
 
+import com.noah.bscript.BScript;
 import com.noah.bscript.exceptions.BRuntimeException;
+import com.noah.bscript.lang.BExpression;
+import com.noah.bscript.lang.BStatement;
+import com.noah.bscript.lang.BToken;
+import lombok.Getter;
 
-public class BInterpreter implements BExpression.Visitor<Object> {
+import java.util.List;
 
+public class BInterpreter implements BExpression.Visitor<Object>, BStatement.Visitor<Void> {
+
+    private List<BStatement> statements;
     private BScript script;
 
-    public BInterpreter(BScript script) {
+    @Getter private BEnvironment environment;
+
+    public BInterpreter(BScript script, List<BStatement> statements) {
         this.script = script;
+        this.statements = statements;
+        this.environment = new BEnvironment();
     }
 
-    public void interpret(BExpression expression) {
+    public void interpret() {
         try {
-            Object value = this.evaluate(expression);
-            System.out.println(value);
+            for (BStatement statement : this.statements) this.execute(statement);
         } catch (BRuntimeException exception) {
             this.script.error(exception.getToken(), exception.getMessage());
         }
+    }
+
+    ///////////////////////////////////////////////////
+    // STATEMENTS
+    ///////////////////////////////////////////////////
+
+    @Override
+    public Void visitIf(BStatement.If statement) {
+        if (this.isTruthy(this.evaluate(statement.getExpression()))) this.execute(statement.getThenBranch());
+        else if (statement.getElseBranch() != null) this.execute(statement.getElseBranch());
+        return null;
+    }
+
+    @Override
+    public Void visitWhile(BStatement.While statement) {
+        while (isTruthy(this.evaluate(statement.getCondition())))
+            this.execute(statement.getBody());
+        return null;
+    }
+
+    @Override
+    public Void visitBlock(BStatement.Block statement) {
+        this.executeBlock(statement.getStatements(), new BEnvironment(this.environment));
+        return null;
+    }
+
+    @Override
+    public Void visitExpression(BStatement.Expression statement) {
+        this.evaluate(statement.getExpression());
+        return null;
+    }
+
+    @Override
+    public Void visitPrint(BStatement.Print statement) {
+        Object value = this.evaluate(statement.getExpression());
+        System.out.println(value);
+        return null;
+    }
+
+    @Override
+    public Void visitLetStatement(BStatement.Let statement) {
+        Object value = null;
+        BExpression initializer = statement.getInitializer();
+        if (initializer != null) {
+            value = this.evaluate(initializer);
+        }
+
+        this.environment.define(statement.getName().getLexeme(), value);
+        return null;
+    }
+
+    ///////////////////////////////////////////////////
+    // EXPRESSIONS
+    ///////////////////////////////////////////////////
+
+    @Override
+    public Object visitAssign(BExpression.Assign assign) {
+        Object value = this.evaluate(assign.getValue());
+        this.environment.redefine(assign.getName(), value);
+        return value;
+    }
+
+    @Override
+    public Object visitLetExpression(BExpression.Let expression) {
+        return this.environment.get(expression.getName());
     }
 
     @Override
@@ -74,6 +150,19 @@ public class BInterpreter implements BExpression.Visitor<Object> {
     }
 
     @Override
+    public Object visitLogical(BExpression.Logical expression) {
+        Object left = this.evaluate(expression.getLeft());
+
+        if (expression.getOperator().getType() == BToken.Type.OR) {
+            if (isTruthy(left)) return left;
+        } else {
+            if (!isTruthy(left)) return left;
+        }
+
+        return this.evaluate(expression.getRight());
+    }
+
+    @Override
     public Object visitUnary(BExpression.Unary expression) {
         Object right = this.evaluate(expression.getExpression());
 
@@ -85,8 +174,26 @@ public class BInterpreter implements BExpression.Visitor<Object> {
         return null;
     }
 
+    ///////////////////////////////////////////////////
+    // UTILITY
+    ///////////////////////////////////////////////////
+
     private Object evaluate(BExpression expression) {
         return expression.accept(this);
+    }
+
+    private Object execute(BStatement statement) {
+        return statement.accept(this);
+    }
+
+    private void executeBlock(List<BStatement> statements, BEnvironment environment) {
+        BEnvironment previous = this.environment;
+        try {
+            this.environment = environment;
+            for (BStatement statement : statements) this.execute(statement);
+        } finally {
+            this.environment = previous;
+        }
     }
 
     public void checkNumberOperands(BToken token, Object left, Object right) {

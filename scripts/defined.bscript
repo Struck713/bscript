@@ -1,0 +1,2 @@
+print DEFINED_IN_JAVA;
+print "PI is: " + PI;

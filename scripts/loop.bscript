@@ -1,0 +1,17 @@
+
+// this does not work??
+
+// let x = 0;
+// while (x < 10) {
+//     print x;
+//     x = x + 1;
+// }
+
+// print a box
+for (let n = 0; n < 10; n = n + 1) {
+    let entire = "";
+    for (let m = 0; m < 20; m = m + 1) {
+        entire = entire + "x";
+    }
+    print entire;
+}

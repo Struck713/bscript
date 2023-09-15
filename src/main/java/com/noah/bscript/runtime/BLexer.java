@@ -1,5 +1,7 @@
-package com.noah.bscript.lang;
+package com.noah.bscript.runtime;
 
+import com.noah.bscript.BScript;
+import com.noah.bscript.lang.BToken;
 import com.noah.bscript.utils.CharacterUtils;
 
 import java.util.ArrayList;
@@ -20,6 +22,7 @@ public class BLexer {
         this.source = source;
         this.tokens = new ArrayList<>();
     }
+
 
     /**
      * Tokenize the provided source with the BScript.
@@ -61,7 +64,7 @@ public class BLexer {
                         }
 
                         // eat the */
-                        this.eat(2);
+                        this.consume(2);
                     } else
                         this.add(BToken.Type.SLASH);
                     break;
@@ -78,7 +81,7 @@ public class BLexer {
                     }
 
                     // eat the "
-                    this.eat(1);
+                    this.consume(1);
 
                     String value = this.source.substring(this.start + 1, this.current - 1);
                     this.add(BToken.Type.STRING, value);
@@ -94,7 +97,7 @@ public class BLexer {
                     if (Character.isDigit(next)) {
                         while (Character.isDigit(this.peek())) this.advance();
                         if (this.peek() == '.' && Character.isDigit(this.peekNext())) {
-                            this.eat(1); // eat the .
+                            this.consume(1); // eat the .
                             while (Character.isDigit(this.peek())) this.advance();
                         }
 
@@ -130,11 +133,11 @@ public class BLexer {
     }
 
     /**
-     * Eat a certain amount of characters
+     * Consume a certain amount of characters
      *
      * @param amount the amount of characters to eat
      */
-    private void eat(int amount) {
+    private void consume(int amount) {
         this.current += amount;
     }
 
@@ -189,7 +192,7 @@ public class BLexer {
      */
     private void add(BToken.Type type, Object literal) {
         String text = this.source.substring(this.start, this.current);
-        this.tokens.add(new BToken(type, text, literal, this.line));
+        this.tokens.add(new BToken(type, text, literal, this.line + 1));
     }
 
     /**

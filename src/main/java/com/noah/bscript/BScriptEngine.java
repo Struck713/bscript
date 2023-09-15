@@ -1,11 +1,8 @@
 package com.noah.bscript;
 
 import com.noah.bscript.exceptions.BScriptException;
-import com.noah.bscript.lang.BScript;
 
 import java.io.*;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class BScriptEngine {
 
@@ -21,6 +18,11 @@ public class BScriptEngine {
 
         BScript script = new BScript(file);
         script.load();
+
+        if (script.isFailed()) {
+            System.out.println("Script could not load. Parsing failed with errors.");
+            return null;
+        }
 
         return script;
     }

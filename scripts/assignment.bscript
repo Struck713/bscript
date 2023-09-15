@@ -1,0 +1,7 @@
+let x = (12 + (15 / 2.5));
+let someString = "some string with a long value";
+print x // should print 18.0
+
+someString = "new assignment";
+
+print someString;

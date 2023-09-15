@@ -1,0 +1,2 @@
+print "hi" or 2; // "hi".
+print null or "yes"; // "yes".

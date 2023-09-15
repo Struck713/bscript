@@ -9,7 +9,7 @@ public class CharacterUtils {
     public static final char NULL_TERMINATOR = '\0';
 
     public static boolean isAlphanumeric(char character) {
-        return Character.isDigit(character) || Character.isAlphabetic(character);
+        return Character.isDigit(character) || Character.isAlphabetic(character) || character == '_';
     }
 
 }

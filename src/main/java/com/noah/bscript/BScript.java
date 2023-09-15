@@ -1,6 +1,11 @@
-package com.noah.bscript.lang;
+package com.noah.bscript;
 
-import com.noah.bscript.lang.tools.BAstPrinter;
+import com.noah.bscript.lang.BToken;
+import com.noah.bscript.runtime.BEnvironment;
+import com.noah.bscript.runtime.BInterpreter;
+import com.noah.bscript.runtime.BLexer;
+import com.noah.bscript.runtime.BParser;
+import lombok.Getter;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,6 +16,9 @@ import java.nio.file.Paths;
 public class BScript {
 
     private File file;
+    @Getter private boolean failed;
+
+    private BInterpreter interpreter;
 
     public BScript(File file) {
         this.file = file;
@@ -31,13 +39,21 @@ public class BScript {
 
         BLexer lexer = new BLexer(this, source);
         BParser parser = new BParser(this, lexer.tokenize());
-        BInterpreter interpreter = new BInterpreter(this);
+        this.interpreter = new BInterpreter(this, parser.parse());
+    }
 
-        BExpression expression = parser.parse();
-        interpreter.interpret(expression);
+    public void run() {
+        if (this.failed) return;
+        this.interpreter.interpret();
+    }
+
+    public void define(String name, Object value) {
+        BEnvironment environment = this.interpreter.getEnvironment();
+        environment.define(name, value);
     }
 
     public void error(int line, String location, String message) {
+        this.failed = true;
         System.out.printf("In %s:%d - '%s' %s", file.getPath(), line, message, location);
         System.out.println();
     }
